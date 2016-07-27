@@ -1,5 +1,3 @@
-docker-compose
-docker-machine
 ovh.conf
 .logs
-info.env
+docker
