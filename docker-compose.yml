@@ -1,0 +1,75 @@
+version: '2'
+services:
+  zeo:
+      image: docker-prod.imio.be/mutual-website:latest
+      hostname: website-theux-zeo
+      user: imio
+      volumes:
+          - /srv/instances/theux/blobstorage:/home/imio/imio-website/var/blobstorage
+          - /srv/instances/theux/filestorage:/home/imio/imio-website/var/filestorage
+      command: /home/imio/imio-website/bin/zeoserver fg
+      networks:
+        cluster:
+          aliases:
+            - db
+      labels:
+          - "SERVICE_NAME=website-theux"
+          - "SERVICE_TAGS=db"
+          - "SERVICE_8100_CHECK_TCP=true"
+          - "SERVICE_8100_CHECK_INTERVAL=5s"
+          - "SERVICE_8100_CHECK_TIMEOUT=8s"
+
+  instance:
+      image: docker-prod.imio.be/mutual-website:latest
+      hostname: website-theux-instance
+      user: imio
+      ports:
+        - 8081
+        - 8888
+      environment:
+          - ZEO_HOST=db
+          - ZEO_PORT=8100
+          - PROJECT_ID=theux
+          - MEMCACHE_SERVER=memcached
+          - MEMCACHE_DEFAULT_AGE=10800
+          - ENV=prod
+      networks:
+          - cluster
+      depends_on:
+          - zeo
+          - memcached
+      volumes:
+          - /srv/instances/theux/minisites:/home/imio/imio-website/var/instance/minisites
+          - /srv/instances/theux/import:/home/imio/imio-website/var/instance/import
+          - /srv/instances/theux/Extensions:/home/imio/imio-website/parts/instance/Extensions
+      command: /home/imio/imio-website/bin/instance console
+      labels:
+          - "SERVICE_NAME=website-theux"
+          - "SERVICE_TAGS=instance"
+          - "SERVICE_PATH=theux"
+          - "SERVICE_SERVERNAME=www.theux.be"
+          - "SERVICE_8081_TAGS=http,urlprefix-/theux"
+          - "SERVICE_8888_TAGS=monitoring"
+          - "SERVICE_8081_CHECK_HTTP=/"
+          - "SERVICE_8081_CHECK_INTERVAL=5s"
+          - "SERVICE_8081_CHECK_TIMEOUT=8s"
+      restart: always
+
+  memcached:
+    image: sameersbn/memcached:latest
+    networks:
+      - cluster
+
+  fabio:
+    image: magiconair/fabio:latest
+    networks:
+      - cluster
+    ports:
+      - "9999:9999"
+      - "9998:9998"
+    volumes:
+      - "/tmp/fabio.properties:/etc/fabio/fabio.properties"
+    environment:
+    - SERVICE_9998_TAGS=urlprefix-/fabio
+networks:
+  cluster:
