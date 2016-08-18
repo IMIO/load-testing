@@ -69,7 +69,7 @@ create_jmeter_slave_container() {
         slave_host=$1
         eval "$(docker-machine env --swarm site)"
         ip=$(docker-machine ip "$slave_host")
-        if ! docker ps | grep -q "gliderlabs/registrator";
+        if ! docker ps | grep -q "jfroche/jmeter";
         then
             docker run \
                 --detach \
@@ -77,7 +77,7 @@ create_jmeter_slave_container() {
                 --publish 1099:1099 \
                 --env IP="$ip" \
                 --env constraint:node=="$slave_host" \
-                hhcordero/docker-jmeter-server
+                jfroche/jmeter:1.5
         fi
 }
 
