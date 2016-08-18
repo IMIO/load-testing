@@ -114,6 +114,14 @@ EOF
 
 }
 
+
+create_docker_network() {
+        set -x
+        eval "$(docker-machine env --swarm site)"
+        if ! docker network ls | grep -q "loadtesting_cluster";
+        then
+                docker network create -d overlay loadtesting_cluster
+        fi
 }
 
 create_registrator_service() {
