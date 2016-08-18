@@ -83,16 +83,37 @@ create_jmeter_slave_container() {
         fi
 }
 
-create_consul_service() {
+create_consul_services() {
         eval "$(docker-machine env consul)"
         if ! docker ps | grep -q "progrium/consul";
         then
                 docker run -d --restart=always \
                         -p "8500:8500" \
                         -p 8600:53/udp \
+                        --name consul \
                         -h "consul" \
                         progrium/consul -server -bootstrap
         fi
+        if ! docker ps | grep -q "magiconair/fabio";
+        then
+                docker-machine ssh consul 'sudo rm -fr /tmp/fabio.properties'
+                cat <<EOF | docker-machine ssh consul 'cat - > /tmp/fabio.properties'
+registry.consul.addr = $(docker-machine ip consul):8500
+EOF
+                docker run -d --restart=always \
+                        -p "80:9999" \
+                        -p 9998 \
+                        --name fabio \
+                        -h "consul" \
+                        -v /tmp/fabio.properties:/etc/fabio/fabio.properties \
+                        --label SERVICE_NAME="fabio" \
+                        --label SERVICE_9998_TAGS="fabio,urlprefix-/fabio" \
+                        --label SERVICE_9998_CHECK_HTTP="/" \
+                        magiconair/fabio:latest
+        fi
+
+}
+
 }
 
 create_registrator_service() {
