@@ -38,6 +38,8 @@ create_consul_machine() {
                     --ovh-ssh-user ubuntu \
 		    --engine-label type=consul \
 		    --ovh-flavor "vps-ssd-1" \
+		    --engine-opt="cluster-store=consul://localhost:8500" \
+		    --engine-opt="cluster-advertise=ens3:2376" \
 		    consul
 	fi
 }
@@ -54,6 +56,8 @@ create_jmeter_slave_machine() {
                     --ovh-project loadtesting \
                     --ovh-ssh-user ubuntu \
 		    --ovh-flavor "vps-ssd-1" \
+		    --engine-opt="cluster-store=consul://$(docker-machine ip consul):8500" \
+		    --engine-opt="cluster-advertise=ens3:2376" \
 		    --swarm-discovery="consul://$(docker-machine ip consul):8500" \
 		    --swarm \
 		    "$machine_name"
