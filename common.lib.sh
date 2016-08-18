@@ -74,6 +74,7 @@ create_jmeter_slave_container() {
             docker-machine ssh "$slave_host" "sudo mkdir -p /load_tests && sudo chown ubuntu:ubuntu /load_tests"
             docker run \
                 --detach \
+                --network=loadtesting_cluster \
                 --volume /load_tests:/load_tests \
                 --publish 1099:1099 \
                 --env IP="$ip" \
