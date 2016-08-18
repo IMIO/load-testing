@@ -71,6 +71,7 @@ create_jmeter_slave_container() {
         ip=$(docker-machine ip "$slave_host")
         if ! docker ps | grep -q "jfroche/jmeter";
         then
+            docker-machine ssh "$slave_host" "sudo mkdir -p /load_tests && sudo chown ubuntu:ubuntu /load_tests"
             docker run \
                 --detach \
                 --volume /load_tests:/load_tests \
