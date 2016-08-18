@@ -16,7 +16,7 @@ create_site_machine() {
 		    --engine-label type=site \
 		    --ovh-flavor "vps-ssd-2" \
                     --ovh-ssh-key jfroche \
-                    --ovh-project 6705e3c6a1694bb181b8421649e7b24e \
+                    --ovh-project loadtesting \
                     --ovh-ssh-user ubuntu \
 		    --swarm \
 		    --swarm-master \
@@ -33,8 +33,8 @@ create_consul_machine() {
 	then
 		docker-machine create \
 		    --driver ovh \
+                    --ovh-project loadtesting \
                     --ovh-ssh-key jfroche \
-                    --ovh-project 6705e3c6a1694bb181b8421649e7b24e \
                     --ovh-ssh-user ubuntu \
 		    --engine-label type=consul \
 		    --ovh-flavor "vps-ssd-1" \
@@ -51,7 +51,7 @@ create_jmeter_slave_machine() {
 		    --driver ovh \
 		    --engine-label type=jmeter-slave \
                     --ovh-ssh-key jfroche \
-                    --ovh-project 6705e3c6a1694bb181b8421649e7b24e \
+                    --ovh-project loadtesting \
                     --ovh-ssh-user ubuntu \
 		    --ovh-flavor "vps-ssd-1" \
 		    --swarm-discovery="consul://$(docker-machine ip consul):8500" \
