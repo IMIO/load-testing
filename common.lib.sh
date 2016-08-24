@@ -172,6 +172,21 @@ create_registrator_service() {
         fi
 }
 
+add_consul_machine_to_swarm() {
+        set -x
+        eval "$(docker-machine env consul)"
+        docker run -d \
+                   swarm \
+                   join --advertise $(docker-machine ip consul):2376 \
+                   "consul://$(docker-machine ip consul):8500"
+        eval "$(docker-machine env --swarm site)"
+        if ! docker network inspect loadtesting_cluster -f '{{range $c, $conf :=.Containers }}{{ $conf.Name }} {{end}}' | grep -q "consul";
+        then
+                sleep 5
+                docker network connect --alias consul loadtesting_cluster consul
+        fi
+}
+
 function sync_jmeter_data() {
         local destination_host
         destination_host=$1
