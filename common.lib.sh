@@ -252,8 +252,7 @@ fetch_docker() {
 }
 
 fetch_urls() {
-        set -euo pipefail
-
+        set -xeuo pipefail
         if [ $# -lt 3 ]; then
           echo 1>&2 "$0: not enough arguments"
           exit 1
