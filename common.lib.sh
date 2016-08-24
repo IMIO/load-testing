@@ -114,6 +114,38 @@ EOF
 
 }
 
+function join { local IFS="$1"; shift; echo "$*"; }
+
+start_jmeter_tests() {
+        set -x
+        IP=$(docker-machine ip consul)
+        SLAVES_IPS=()
+        for machine in $(docker-machine ls --filter label=type=jmeter-slave -q);
+        do
+                SLAVES_IPS+=($(docker-machine inspect -f "{{.Driver.IPAddress}}" "$machine"))
+        done;
+        SLAVES=$(join , "${SLAVES_IPS[@]}")
+        echo "$SLAVES"
+        TEST_DIR="test1"
+        TEST_PLAN="csv-test"
+        eval "$(docker-machine env --swarm site)"
+        TEST_CONTAINER=$(docker run \
+            --detach \
+            --publish 1099:1099 \
+            --network=loadtesting_cluster \
+            --volume /load_tests/$TEST_DIR:/load_tests/$TEST_DIR \
+            --env TEST_DIR=$TEST_DIR \
+            --env TEST_PLAN=$TEST_PLAN \
+            --env IP="$IP" \
+            --env MODE="client" \
+            --env REMOTE_HOSTS="$SLAVES" \
+            --env constraint:node=="consul" \
+            --env EXTRA_PARAMETERS="-Ghostname=instance:8081/theux -Gcsv=www.theux.be.csv" \
+            jfroche/jmeter:1.6)
+        docker logs -f "$TEST_CONTAINER"
+        docker rm "$TEST_CONTAINER"
+        docker-machine ssh consul cat /load_tests/test1/results.txt
+}
 
 create_docker_network() {
         set -x
