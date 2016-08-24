@@ -64,17 +64,23 @@ services:
       - "constraint:node==site"
     networks:
       - cluster
-
-  fabio:
-    image: magiconair/fabio:latest
-    networks:
-      - cluster
+  cadvisor:
+    image: google/cadvisor
     ports:
-      - "9999:9999"
-      - "9998:9998"
-    volumes:
-      - "/tmp/fabio.properties:/etc/fabio/fabio.properties"
+      - "8080"
+    networks:
+        - cluster
     environment:
-    - SERVICE_9998_TAGS=urlprefix-/fabio
+      - "constraint:node==site"
+    volumes:
+      - "/var/run:/var/run:rw"
+      - "/sys:/sys:ro"
+      - "/var/lib/docker/:/var/lib/docker:ro"
+    labels:
+      - "SERVICE_8080_TAGS=http,urlprefix-/cadvisor,urlprefix-/containers,urlprefix-/static"
+      - "SERVICE_8080_CHECK_HTTP=/"
+      - "SERVICE_8080_CHECK_INTERVAL=5s"
+      - "SERVICE_8080_CHECK_TIMEOUT=8s"
+
 networks:
   cluster:
