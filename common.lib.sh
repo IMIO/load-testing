@@ -188,10 +188,12 @@ add_consul_machine_to_swarm() {
 }
 
 function sync_jmeter_data() {
+        set -x
         local destination_host
         destination_host=$1
         docker-machine ssh "$destination_host" "sudo mkdir -p /load_tests && sudo chown ubuntu:ubuntu /load_tests"
-        docker-machine scp -r test1 "$destination_host":/load_tests
+        rsync -azhe "ssh -o StrictHostKeyChecking=no" --stats --omit-dir-times test1 ubuntu@"$(docker-machine ip $destination_host)":/load_tests
+        docker-machine ssh "$destination_host" "sudo find /load_tests -name *.jtl -delete && sudo rm -fr /load_tests/test1/results"
 }
 
 function start_site() {
