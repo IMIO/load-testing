@@ -212,10 +212,10 @@ sync_docker_image() {
         set -x
         eval "$(docker-machine env -u)"
 	REMOTE_DOCKER_IMAGE_ID=$(ssh -o StrictHostKeyChecking=no ubuntu@"$(docker-machine ip site)" sudo docker inspect --format '{{.Id}}' docker-prod.imio.be/mutual-website 2> /dev/null || true)
-	LOCAL_DOCKER_IMAGE_ID=$(docker inspect --format '{{.Id}}' docker-prod.imio.be/mutual-website)
+	LOCAL_DOCKER_IMAGE_ID=$(/usr/bin/docker inspect --format '{{.Id}}' docker-prod.imio.be/mutual-website)
 	if [[ ! "$REMOTE_DOCKER_IMAGE_ID" == "$LOCAL_DOCKER_IMAGE_ID" ]];
 	then
-		docker save docker-prod.imio.be/mutual-website:latest | \
+		/usr/bin/docker save docker-prod.imio.be/mutual-website:latest | \
 		     ssh -o StrictHostKeyChecking=no ubuntu@"$(docker-machine ip site)" 'sudo docker load'
 	fi
 }
