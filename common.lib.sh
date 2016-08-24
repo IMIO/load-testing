@@ -165,6 +165,7 @@ create_registrator_service() {
                    -v /var/run/docker.sock:/tmp/docker.sock \
                    -h registrator-swarm-master \
                    --name registrator-swarm-master \
+                   --env constraint:node=="site" \
                    gliderlabs/registrator:v7 \
                    -ip="$(docker-machine ip site)" \
                    consul://"$(docker-machine ip consul)":8500
