@@ -247,7 +247,7 @@ fetch_docker_compose() {
 fetch_docker() {
         mkdir -p docker
 	if ! [ -f docker/docker ]; then
-                curl -L https://get.docker.com/builds/Linux/x86_64/docker-1.11.2.tgz | tar xvzf -
+                curl -L https://get.docker.com/builds/Linux/x86_64/docker-1.12.0.tgz | tar xvzf -
 	fi
 }
 
