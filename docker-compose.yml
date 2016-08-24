@@ -84,3 +84,5 @@ services:
 
 networks:
   cluster:
+    external:
+      name: loadtesting_cluster
