@@ -12,17 +12,15 @@ create_site_machine() {
 	if ! docker-machine ls -q|grep -q site;
 	then
 		docker-machine create \
-		    --driver ovh \
 		    --engine-label type=site \
-		    --ovh-flavor "vps-ssd-2" \
-                    --ovh-ssh-key jfroche \
-                    --ovh-project loadtesting \
-                    --ovh-ssh-user ubuntu \
+		    --driver generic \
+                    --generic-ssh-user ubuntu \
+                    --generic-ip-address "$(get_public_host_ip site)" \
 		    --swarm \
 		    --swarm-master \
-		    --swarm-discovery="consul://$(docker-machine ip consul):8500" \
-		    --engine-opt="cluster-store=consul://$(docker-machine ip consul):8500" \
-		    --engine-opt="cluster-advertise=ens3:2376" \
+		    --swarm-discovery="consul://$(get_private_host_ip consul):8500" \
+		    --engine-opt="cluster-store=consul://$(get_private_host_ip consul):8500" \
+		    --engine-opt="cluster-advertise=ens4:2376" \
 		    site
 	fi
 }
@@ -32,14 +30,12 @@ create_consul_machine() {
 	if ! docker-machine ls -q|grep -q consul;
 	then
 		docker-machine create \
-		    --driver ovh \
-                    --ovh-project loadtesting \
-                    --ovh-ssh-key jfroche \
-                    --ovh-ssh-user ubuntu \
+		    --driver generic \
+                    --generic-ip-address "$(get_public_host_ip consul)" \
+                    --generic-ssh-user ubuntu \
 		    --engine-label type=consul \
-		    --ovh-flavor "vps-ssd-1" \
 		    --engine-opt="cluster-store=consul://localhost:8500" \
-		    --engine-opt="cluster-advertise=ens3:2376" \
+		    --engine-opt="cluster-advertise=ens4:2376" \
 		    consul
 	fi
 }
@@ -50,15 +46,13 @@ create_jmeter_slave_machine() {
 	if ! docker-machine ls -q|grep -q "$machine_name";
 	then
 		docker-machine create \
-		    --driver ovh \
 		    --engine-label type=jmeter-slave \
-                    --ovh-ssh-key jfroche \
-                    --ovh-project loadtesting \
-                    --ovh-ssh-user ubuntu \
-		    --ovh-flavor "vps-ssd-1" \
-		    --engine-opt="cluster-store=consul://$(docker-machine ip consul):8500" \
-		    --engine-opt="cluster-advertise=ens3:2376" \
-		    --swarm-discovery="consul://$(docker-machine ip consul):8500" \
+		    --driver generic \
+                    --generic-ssh-user ubuntu \
+                    --generic-ip-address "$(get_public_host_ip jmeter-slave)" \
+		    --engine-opt="cluster-store=consul://$(get_private_host_ip consul):8500" \
+		    --engine-opt="cluster-advertise=ens4:2376" \
+		    --swarm-discovery="consul://$(get_private_host_ip):8500" \
 		    --swarm \
 		    "$machine_name"
 	fi
@@ -81,6 +75,16 @@ create_jmeter_slave_container() {
                 --env constraint:node=="$slave_host" \
                 jfroche/jmeter:1.5
         fi
+}
+
+get_public_host_ip() {
+        slave_host=$1
+        make -s -C cloud list-instances PROJECT=loadtesting FORMAT=json|jq -c ".[] | select(.name == \"$slave_host\" )"|jq -r '.ipAddresses[] | select(.type == "public") | .ip'
+}
+
+get_private_host_ip() {
+        slave_host=$1
+        make -s -C cloud list-instances PROJECT=loadtesting FORMAT=json|jq -c ".[] | select(.name == \"$slave_host\" )"|jq -r '.ipAddresses[] | select(.type == "private") | .ip'
 }
 
 create_consul_services() {
