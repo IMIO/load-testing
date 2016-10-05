@@ -115,7 +115,7 @@ EOF
                         --label SERVICE_9998_CHECK_HTTP="/" \
                         magiconair/fabio:latest
         fi
-
+        eval "$(docker-machine env -u)"
 }
 
 function join { local IFS="$1"; shift; echo "$*"; }
