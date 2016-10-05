@@ -227,7 +227,7 @@ sync_docker_image() {
 fetch_docker_machine() {
         mkdir -p docker
 	if ! [ -f docker/docker-machine ]; then
-                curl -L https://github.com/docker/machine/releases/download/v0.8.0/docker-machine-"$(uname -s)"-"$(uname -m)" > docker/docker-machine
+                curl -L https://github.com/docker/machine/releases/download/v0.8.2/docker-machine-"$(uname -s)"-"$(uname -m)" > docker/docker-machine
 	fi
 	chmod +x docker/docker-machine
 }
@@ -243,7 +243,7 @@ fetch_docker_machine_ovh_driver() {
 fetch_docker_compose() {
         mkdir -p docker
 	if ! [ -f docker/docker-compose ]; then
-                curl -L https://github.com/docker/compose/releases/download/1.8.0/docker-compose-"$(uname -s)"-"$(uname -m)" > docker/docker-compose
+                curl -L https://github.com/docker/compose/releases/download/1.8.1/docker-compose-"$(uname -s)"-"$(uname -m)" > docker/docker-compose
 	fi
 	chmod +x docker/docker-compose
 }
@@ -251,7 +251,7 @@ fetch_docker_compose() {
 fetch_docker() {
         mkdir -p docker
 	if ! [ -f docker/docker ]; then
-                curl -L https://get.docker.com/builds/Linux/x86_64/docker-1.12.0.tgz | tar xvzf -
+                curl -L https://get.docker.com/builds/Linux/x86_64/docker-1.12.1.tgz | tar xvzf -
 	fi
 }
 
